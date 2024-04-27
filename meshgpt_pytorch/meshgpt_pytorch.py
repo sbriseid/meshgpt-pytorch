@@ -61,7 +61,7 @@ from gateloop_transformer import SimpleGateLoopLayer
 
 from tqdm import tqdm
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device_type = "cuda" if torch.cuda.is_available() else "cpu"
 
 # helper functions
 
@@ -972,9 +972,7 @@ class MeshAutoencoder(Module):
 
         # reconstruction loss on discretized coordinates on each face
         # they also smooth (blur) the one hot positions, localized label smoothing basically
-
-        with autocast(enabled = False, device_type="cpu"):
-        #with autocast(enabled=False, device_type=device):
+        with autocast(enabled=False, device_type=device_type):
             pred_log_prob = pred_face_coords.log_softmax(dim = 1)
 
             target_one_hot = torch.zeros_like(pred_log_prob).scatter(1, face_coordinates, 1.)
