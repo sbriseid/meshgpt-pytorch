@@ -9,8 +9,9 @@ import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
 if torch.cuda.is_available():
     from torch.cuda.amp import autocast
-#elif torch.backends.mps.is_available():
-#    import torch.backends.mps
+elif torch.backends.mps.is_available():
+    import torch.backends.mps
+    from torch import autocast
 #    from torch.backends.mps import autocast
 else:
     from torch import autocast
@@ -972,7 +973,8 @@ class MeshAutoencoder(Module):
         # reconstruction loss on discretized coordinates on each face
         # they also smooth (blur) the one hot positions, localized label smoothing basically
 
-        with autocast(enabled = False, device_type=device):
+        with autocast(enabled = False, device_type="cpu"):
+        #with autocast(enabled=False, device_type=device):
             pred_log_prob = pred_face_coords.log_softmax(dim = 1)
 
             target_one_hot = torch.zeros_like(pred_log_prob).scatter(1, face_coordinates, 1.)
