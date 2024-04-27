@@ -7,7 +7,13 @@ from torch import nn, Tensor, einsum
 from torch.nn import Module, ModuleList
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
-from torch.cuda.amp import autocast
+if torch.cuda.is_available():
+    from torch.cuda.amp import autocast
+#elif torch.backends.mps.is_available():
+#    import torch.backends.mps
+#    from torch.backends.mps import autocast
+else:
+    from torch import autocast
 
 from torchtyping import TensorType
 
@@ -53,6 +59,8 @@ from torch_geometric.nn.conv import SAGEConv
 from gateloop_transformer import SimpleGateLoopLayer
 
 from tqdm import tqdm
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # helper functions
 
@@ -964,7 +972,7 @@ class MeshAutoencoder(Module):
         # reconstruction loss on discretized coordinates on each face
         # they also smooth (blur) the one hot positions, localized label smoothing basically
 
-        with autocast(enabled = False):
+        with autocast(enabled = False, device_type=device):
             pred_log_prob = pred_face_coords.log_softmax(dim = 1)
 
             target_one_hot = torch.zeros_like(pred_log_prob).scatter(1, face_coordinates, 1.)
