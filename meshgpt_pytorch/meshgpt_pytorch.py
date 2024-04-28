@@ -63,7 +63,6 @@ from tqdm import tqdm
 
 # As of April 28th 2024 mps still does not provide autocast.
 device_autocast = "cuda" if torch.cuda.is_available() else "cpu"
-#device_type = "cuda" if torch.cuda.is_available() else "cpu"
 
 # helper functions
 

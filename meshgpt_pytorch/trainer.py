@@ -362,7 +362,7 @@ class MeshAutoencoderTrainer(Module):
                 else: # If the data includes a Tensor not supported on this platform we may end up here.
                     print("Did not expect this, please check your dataloader")
                 maybe_del(forward_kwargs, 'texts', 'text_embeds')
-                    
+
                 with self.accelerator.autocast(), maybe_no_sync():
                     total_loss, (recon_loss, commit_loss) = self.model(
                         **forward_kwargs,
