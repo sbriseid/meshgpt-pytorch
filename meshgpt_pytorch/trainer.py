@@ -43,8 +43,6 @@ DEFAULT_DDP_KWARGS = DistributedDataParallelKwargs(
     find_unused_parameters = True
 )
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 # helper functions
 
 def exists(v):
@@ -240,7 +238,7 @@ class MeshAutoencoderTrainer(Module):
         path = Path(path)
         assert path.exists()
 
-        pkg = torch.load(str(path), map_location=torch.device(device))
+        pkg = torch.load(str(path))
 
         if version.parse(__version__) != version.parse(pkg['version']):
             self.print(f'loading saved mesh autoencoder at version {pkg["version"]}, but current package version is {__version__}')
@@ -361,7 +359,7 @@ class MeshAutoencoderTrainer(Module):
                     forward_kwargs = dict(zip(self.data_kwargs, batch)) 
                 elif isinstance(batch, dict):
                     forward_kwargs = batch
-                else:
+                else: # If the data includes a Tensor not supported on this platform we may end up here.
                     print("Did not expect this, please check your dataloader")
                 maybe_del(forward_kwargs, 'texts', 'text_embeds')
                     
@@ -633,7 +631,7 @@ class MeshTransformerTrainer(Module):
         path = Path(path)
         assert path.exists()
 
-        pkg = torch.load(str(path), map_location=torch.device(device))
+        pkg = torch.load(str(path))
 
         if version.parse(__version__) != version.parse(pkg['version']):
             self.print(f'loading saved mesh transformer at version {pkg["version"]}, but current package version is {__version__}')
