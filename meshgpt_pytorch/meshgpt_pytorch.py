@@ -61,9 +61,9 @@ from gateloop_transformer import SimpleGateLoopLayer
 
 from tqdm import tqdm
 
-#device_type = "cuda" if torch.cuda.is_available() else "cpu"
-# As of April28th 2024 mps does not provide autocast.
+# As of April 28th 2024 mps still does not provide autocast.
 device_autocast = "cuda" if torch.cuda.is_available() else "cpu"
+#device_type = "cuda" if torch.cuda.is_available() else "cpu"
 
 # helper functions
 
