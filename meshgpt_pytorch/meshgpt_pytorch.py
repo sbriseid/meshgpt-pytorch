@@ -604,6 +604,15 @@ class MeshAutoencoder(Module):
         self.commit_loss_weight = commit_loss_weight
         self.bin_smooth_blur_sigma = bin_smooth_blur_sigma
 
+    def check_precision(self) -> List[str]:
+        precision_list = []
+        for layer in self.layers:
+            for param in layer.parameters():
+                if torch.is_tensor(param):
+                    precision = str(param.dtype)
+                    precision_list.append(precision)
+        return precision_list
+
     @beartype
     def encode(
         self,
