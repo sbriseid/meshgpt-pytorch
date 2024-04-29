@@ -358,10 +358,12 @@ class MeshAutoencoderTrainer(Module):
                 if isinstance(batch, tuple):
                     forward_kwargs = dict(zip(self.data_kwargs, batch)) 
                 elif isinstance(batch, dict):
-                    forward_kwargs = batch 
+                    forward_kwargs = batch
+                else: # If the data includes a Tensor not supported on this platform we may end up here.
+                    print("Did not expect this, please check your dataloader")
                 maybe_del(forward_kwargs, 'texts', 'text_embeds')
-                
-                with self.accelerator.autocast(), maybe_no_sync():  
+
+                with self.accelerator.autocast(), maybe_no_sync():
                     total_loss, (recon_loss, commit_loss) = self.model(
                         **forward_kwargs,
                         return_loss_breakdown = True

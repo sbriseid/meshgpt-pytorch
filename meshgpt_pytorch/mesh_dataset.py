@@ -9,9 +9,11 @@ from meshgpt_pytorch import (
 
 from meshgpt_pytorch.data import ( 
     derive_face_edges_from_faces
-) 
- 
-class MeshDataset(Dataset): 
+)
+import torch
+
+
+class MeshDataset(Dataset):
     """
     A PyTorch Dataset to load and process mesh data. 
     The `MeshDataset` provides functions to load mesh data from a file, embed text information, generate face edges, and generate codes.
@@ -60,13 +62,21 @@ class MeshDataset(Dataset):
     def save(self, path):  
         np.savez_compressed(path, self.data, allow_pickle=True) 
         print(f"[MeshDataset] Saved {len(self.data)} entrys at {path}")
-        
+
     @classmethod
     def load(cls, path):   
         loaded_data = np.load(path, allow_pickle=True)  
         data = []
         for item in loaded_data["arr_0"]:
-            data.append(item)  
+            data.append(item)
+            print("type(item): ", type(item))
+            # Print the elements using the items() method
+            for key_value in item.items():
+                key, value = key_value
+                if torch.is_tensor(value):
+                    #print(f"Key: {key}, Value: {value}")
+                    precision = str(value.dtype)
+                    print(f"The element is a tensor with precision: {precision}")
         print(f"[MeshDataset] Loaded {len(data)} entrys")
         return cls(data) 
     def sort_dataset_keys(self):

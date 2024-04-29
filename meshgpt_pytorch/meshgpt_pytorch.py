@@ -7,7 +7,14 @@ from torch import nn, Tensor, einsum
 from torch.nn import Module, ModuleList
 import torch.nn.functional as F
 from torch.utils.checkpoint import checkpoint
-from torch.cuda.amp import autocast
+if torch.cuda.is_available():
+    from torch.cuda.amp import autocast
+elif torch.backends.mps.is_available():
+    import torch.backends.mps
+    from torch import autocast
+#    from torch.backends.mps import autocast
+else:
+    from torch import autocast
 
 from torchtyping import TensorType
 
@@ -53,6 +60,9 @@ from torch_geometric.nn.conv import SAGEConv
 from gateloop_transformer import SimpleGateLoopLayer
 
 from tqdm import tqdm
+
+# As of April 28th 2024 mps still does not provide autocast.
+device_autocast = "cuda" if torch.cuda.is_available() else "cpu"
 
 # helper functions
 
@@ -594,6 +604,15 @@ class MeshAutoencoder(Module):
         self.commit_loss_weight = commit_loss_weight
         self.bin_smooth_blur_sigma = bin_smooth_blur_sigma
 
+    def check_precision(self) -> List[str]:
+        precision_list = []
+        for layer in self.layers:
+            for param in layer.parameters():
+                if torch.is_tensor(param):
+                    precision = str(param.dtype)
+                    precision_list.append(precision)
+        return precision_list
+
     @beartype
     def encode(
         self,
@@ -905,7 +924,6 @@ class MeshAutoencoder(Module):
             face_edges = derive_face_edges_from_faces(faces, pad_id = self.pad_id)
 
         num_faces, num_face_edges, device = faces.shape[1], face_edges.shape[1], faces.device
-
         face_mask = reduce(faces != self.pad_id, 'b nf c -> b nf', 'all')
         face_edges_mask = reduce(face_edges != self.pad_id, 'b e ij -> b e', 'all')
 
@@ -963,8 +981,7 @@ class MeshAutoencoder(Module):
 
         # reconstruction loss on discretized coordinates on each face
         # they also smooth (blur) the one hot positions, localized label smoothing basically
-
-        with autocast(enabled = False):
+        with autocast(enabled=False, device_type=device_autocast):
             pred_log_prob = pred_face_coords.log_softmax(dim = 1)
 
             target_one_hot = torch.zeros_like(pred_log_prob).scatter(1, face_coordinates, 1.)
