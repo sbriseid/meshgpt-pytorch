@@ -69,14 +69,14 @@ class MeshDataset(Dataset):
         data = []
         for item in loaded_data["arr_0"]:
             data.append(item)
-            print("type(item): ", type(item))
+            #print("type(item): ", type(item))
             # Print the elements using the items() method
             for key_value in item.items():
                 key, value = key_value
                 if torch.is_tensor(value):
                     #print(f"Key: {key}, Value: {value}")
                     precision = str(value.dtype)
-                    print(f"The element is a tensor with precision: {precision}")
+                    #print(f"The element is a tensor with precision: {precision}")
         print(f"[MeshDataset] Loaded {len(data)} entrys")
         return cls(data) 
     def sort_dataset_keys(self):
