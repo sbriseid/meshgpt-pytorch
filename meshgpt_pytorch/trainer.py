@@ -622,7 +622,8 @@ class MeshTransformerTrainer(Module):
             model = self.unwrapped_model.state_dict(),
             optimizer = self.optimizer.state_dict(),
             step = self.step.item(),
-            version = __version__
+            version = __version__,
+            config = self.unwrapped_model._config
         )
 
         torch.save(pkg, str(path))
